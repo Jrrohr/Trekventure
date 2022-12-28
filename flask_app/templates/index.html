@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Audiowide&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='img/icon.png') }}">
+    <title>Trekventure</title>
+</head>
+<body>
+    <div class="navbar">
+        <div class="navbuttons">
+        {% if 'uid' not in session: %}
+            <button onclick="openregister()">Register</button>
+            <button onclick="openlogin()">Login</button>
+        {% else: %}
+        <a href="/logout"><button>Logout</button></a>
+        <a href="/dashboard"><button>My Games</button></a>
+        {% endif %}
+        </div>
+        <h1 class="title">TREKVENTURE</h1>
+        <div class="navbuttons right">
+            {% if 'uid' in session: %}
+                <a href="/save"><button>Save</button></a>
+            {% endif %}
+            <a href="/restart"><button>Restart</button></a>
+        </div>
+    </div>
+    <div class="main">
+        <div id="registerForm">
+            <h1>Register</h1>
+            {% with messages = get_flashed_messages(category_filter=["register"]) %}
+                {% if messages %}
+                    {% for message in messages %}
+                        <p>{{message}}</p>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            <form action="/register" method="post" class="flex flexColumn marginTop">
+                <label for="username">Username: </label>
+                <input type="text" name="username">
+                <label for="email">Email: </label>
+                <input type="text" name="email">
+                <label for="password">Password: </label>
+                <input type="password" name="password">
+                <label for="confirm_password">Confirm Password: </label>
+                <input type="password" name="confirm_password">
+                <input type="submit">
+            </form>
+            <button onclick="hide()">Nevermind</button>
+        </div>
+        <div id="loginForm">
+            <h1>Login</h1>
+            {% with messages = get_flashed_messages(category_filter=["login"]) %}
+                {% if messages %}
+                    {% for message in messages %}
+                        <p>{{message}}</p>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            <form action="/login" method="post" class="flex flexColumn marginTop">
+                <label for="username">Username: </label>
+                <input type="text" name="username">
+                <label for="password">Password: </label>
+                <input type="password" name="password">
+                <input type="submit">
+            </form>
+            <button onclick="hide()">Nevermind</button>
+        </div>
+        {% if 'start' not in session: %}
+            <h1 class="introTitle">Welcome to Trekventure!</h1>
+            <p class="introTitle">Trekventure is a text based adventure game based on the beloved TV series, Star Trek. It takes place in the timeline of the original series.</p>
+            <a href="/startgame"><button class="getStarted">Let's get started!</button></a>
+        {% else: %}
+            {% if session['page_number'] == 0: %}
+            <div id="createCharacter">
+                <h2>Welcome to Trekventure! Let's create your character!</h2>
+                {% if 'shirt' not in session: %}
+                    <form class="flex" action="/chooseShirt" method="post" id="shirts">
+                        <div class="choose">
+                            <input type="radio" id="Yellow Shirt" name="shirt" value="Yellow Shirt" hidden onchange="this.form.submit()">
+                            <label for="Yellow Shirt">
+                                <img id="yellowshirt" src="{{ url_for('static', filename='img/yellowshirtm.png') }}">
+                                <p>Yellow Shirt</p>
+                            </label>
+                        </div>
+                        <div class="choose">
+                            <input type="radio" id="Blue Shirt" name="shirt" value="Blue Shirt" hidden onchange="this.form.submit()">
+                            <label for="Blue Shirt">
+                                <img id="blueshirt"src="{{ url_for('static', filename='img/blueshirtm.png') }}">
+                                <p>Blue Shirt</p>
+                            </label>
+                        </div>
+                        <div class="choose">
+                            <input type="radio" id="Red Shirt" name="shirt" value="Red Shirt" hidden onchange="this.form.submit()">
+                            <label for="Red Shirt">
+                                <img id="redshirt"src="{{ url_for('static', filename='img/redshirtm.png') }}" onclick="redShirt()">
+                                <p>Red Shirt</p>
+                            </label>
+                        </div>
+                    </form>
+                    <button onclick="toggle()">Toggle M/F</button>
+                {% else: %}
+                    {% if 'name' not in session: %}
+                        <h3>Choose your character's name</h3>
+                        <form action="/getname" method="post">
+                            <input type="text" name="name" class="inputName"><input type="submit" hidden>
+                        </form>
+                    {% else: %}
+                        {% if session['page_number'] == 0: %}
+                            <div>
+                                <h3>Your character's name is: {{ session['name'] }}</h3>
+                                <h3>And your job is: 
+                                    {% if session['shirt'] == "Yellow Shirt": %}
+                                        Captain
+                                    {% elif session['shirt'] == "Blue Shirt": %}
+                                        Science Officer
+                                    {% else: %}
+                                        Security Officer
+                                    {% endif %}
+                                </h3>
+                            </div>
+                            {% if 'uid' not in session: %}
+                            <div id="register">
+                                <h3>Do you want to register to be able to save your game?</h3>
+                                <button onclick="openregister()">Register</button> 
+                            </div>
+                            {% endif %}
+                            <a href="/nextpage"><button>Next</button></a>
+                        {% endif %}
+                    {% endif %}
+                {% endif %}
+            </div>
+            {% endif %}
+            {% if session['page_number'] == 1: %}
+                {% if 'explore' not in session: %}
+                <h2>Where would you like to go?</h2>
+                <form class="flex" action="/explore" method="post" id="explore">
+                    <div class="choose">
+                        <input type="radio" id="Explore Space" name="explore" value="Explore Space" hidden onchange="this.form.submit()">
+                        <label for="Explore Space">
+                            <div id="box1">
+                                <p>Explore Space</p>
+                            </div>
+                        </label>
+                    </div>
+                    <div class="choose">
+                        <input type="radio" id="Away Mission" name="explore" value="Away Mission" hidden onchange="this.form.submit()">
+                        <label for="Away Mission">
+                            <div id="box2">
+                                <p>Go on an away mission</p>
+                            </div>
+                        </label>
+                    </div>
+                </form>
+                {% else: %}
+                <h2>Stardate 33839.76</h2>
+                    {% if session['explore'] == "Away Mission": %}
+                        <p>The Enterprise has been asked by Admiral Jones to explore a nearby planet.
+                            There have been reports that some of the plant life could be used to cure a sickness that has been wreaking havoc on a newly established Federation settlement.</p>
+                        {% if session['shirt'] == 'Yellow Shirt': %}
+                            <p>You announce over the ship's speakers to let the crew know you have a new mission.</p>
+                        {% else: %}
+                            <p>You hear the captain announce over the ship's speakers that you are going on a new mission.</p>
+                        {% endif %}
+                        {% if 'location' not in session: %}
+                        <p>Click below to find out where you are going!</p>
+                            <button onclick="fetchPlanet()" id="loadingplanet">Where could it be?</button>
+                            <form action="/getlocation" id="getplanet" method="post">
+                                <input id="generatedplanet" type="text" name="location" hidden>
+                            </form>
+                        {% else: %}
+                            <h2>The mission will take you to {{ session['location'] }}</p>
+                            <a href="/nextpage"><button>Next</button></a>
+                        {% endif %}
+                    {% else: %}
+                        <p>The Enterprise has been flying through space uneventfully for the past week.</p>
+                        <p>Suddenly, scanners are picking up something out there in never ending space.</p>
+                        {% if 'location' not in session: %}
+                            <p>Click below to find out what it is!</p>
+                            <button onclick="fetchAstronomicalObject()" id="loadingastro">What is it?</button>
+                            <form action="/getlocation" id="getplanet" method="post">
+                                <input id="astroname" type="text" name="location" hidden>
+                            </form>
+                        {% else: %}
+                            <h2>You have come across {{ session['location'] }}</h2>
+                            <a href="/nextpage"><button>Next</button></a>
+                        {% endif %}
+                    {% endif %}
+                {% endif %}
+            {% endif %}
+            {% if session['page_number'] == 2: %}
+                {% if session['explore'] == "Away Mission": %}
+                <h2>Planet {{ session['location'] }}</h2>
+                    {% if session['shirt'] == 'Yellow Shirt': %}
+                        <p>It is time to gather an away team. You select your first officer, a science officer specializing in botany, and two security officers.</p>
+                        <p>"Preliminary scans show the planet should be safe enough," your first officer says. You nod.</p>
+                        <p>You both head to the transporter room.</p>
+                    {% elif session['shirt'] == 'Blue Shirt': %}
+                        <p>You had been working in the botany lab when you heard the announcement over the speakers. You get a direct intercom to your station from the captain. He has requested that you join this away mission because of your specialty in botany.</p>
+                        <p>You collect the necessary equipment and head to the transporter room.</p>
+                        <p>"Hello {{ session['name'] }}," the captain says, "Glad to have you with us today."</p>
+                        <p>You step on the transporter pad and the captain gives the go ahead to the officer at the controls to beam you all down.</p>
+                    {% else: %}
+                        <p>You were just getting ready for your security rotation when you hear the announcement over the speakers. The head of security calls your cabin intercom to inform you that you and your security team partner will be joining the captain on the away mission.</p>
+                        <p>You make your way to the transporter room and run into your partner on the turbolift.</p>
+                        <p>"Hey {{ session['name'] }}! Are you ready? I think it will be nice to get off the ship for a bit," he says, "I feel like we've been flying forever!"</p>
+                        <p>"I agree," you say, "Let's hope nothing crazy happens!"</p>
+                        <p>You both step into the transporter room where the captain gives you a nod. He signals for the officer at the controls to beam you all down.</p>
+                    {% endif %}
+                {% else: %}
+                    <h2>{{ session['location'] }}</h2>
+                    {% if session['shirt'] == "Yellow Shirt" %}
+                        <p>You turn to your first officer.</p>
+                        <p>"Get me scans of this thing," You say.</p>
+                        <p>"Yes, captain," She responds.</p>
+                        <p>In the middle of her scans your tactical officer yells, "Captain! Klingon Bird of Prey decloaking off the starboard bow!"</p>
+                        <p>"Red alert!" You yell as the Enterprise is rocked by fire from the Klingons. You fall out of your chair and hit your head.</p>
+                    {% elif session['shirt'] == "Blue Shirt": %}
+                        <p>You are in the science lab compiling data from the latest round of experiments on a new subspace bacteria.</p>
+                        <p>"Hey {{ session['name'] }}!" Your research partner calls out to you. "When do you think we will get to see something other than endless stars out these windows?"</p>
+                        <p>You look up from your data. "Um, how about right now?"</p>
+                        <p>Out the window you see {{ session['location'] }}.</p>
+                        <p>Your partner runs to her console. "Wow, I wonder what the-"</p>
+                        <p>Before she can finish her sentence the red alert signal starts blaring and the ship rocks with disruptor fire.</p>
+                    {% else: %}
+                        <p>You and your security partner are on patrol.</p>
+                        <p>"Do you ever feel like patrol is just a little... mundane, {{ session['name'] }}?" Your parnet breaks the silence with his question.</p>
+                        <p>"Absolutely," you say. "But out in space, you never know what can happen. I heard the Aurora had an encounter with invisible mind controlling organisms."</p>
+                        <p>"Pfft. Glad I'm not on the Aurora," He replies.</p>
+                        <p>Just as he finishes his sentence, the red alert blares and the ship is rocked with disruptor fire.</p>
+                        <p>"All hands to battle stations," the alert says.</p>
+                    {% endif %}
+                {% endif %}
+                <a href="/nextpage"><button>Next</button></a>
+            {% endif %}
+            {% if session['page_number'] == 3: %}
+                {% if session['explore'] == "Away Mission": %}
+                    <h2>On the planet's surface</h2>
+                    <p>The away team beams down onto {{ session['location'] }}'s surface.</p>
+                    {% if session['shirt'] == 'Yellow Shirt': %}
+                        <p>The science officer starts to scan the nearby plant life with the tricorder.</p>
+                    {% elif session['shirt'] == 'Blue Shirt': %}
+                        <p>You start to scan the neaby plant life with your tricorder.</p>
+                    {% else: %}
+                        <p>The science officer starts to scan the nearby plant life with the tricorder.</p>
+                    {% endif %}
+                    <p>Suddenly, you hear plants russeling nearby. Everyone's hand immediately moves towards their phasers.</p>
+                    <p>You see eyes glowing in the shadows. An alien steps out.</p>
+                    {% if 'encounter' not in session: %}
+                        <p>Click below to find out what species you have encountered!</p>
+                                <button onclick="fetchEncounter()" id="loadingencounter">Get my encounter</button>
+                                <form action="/getencounter" id="getencounter" method="post">
+                                    <input id="speciesname" type="text" name="encounter" hidden>
+                                </form>
+                    {% else: %}
+                        <h2>You have encountered {{ session['encounter'] }}</h2>
+                        {% if session['shirt'] == "Yellow Shirt": %}
+                            <p>You call out a greeting to it.</p>
+                        {% else: %}
+                            <p>The captain calls out a greeting to it.</p>
+                        {% endif %}
+                        <a href="/friendly"><button>Is it friendly?</button></a>
+                    {% endif %}
+                {% else: %}
+                    <h2>Klingon Battle</h2>
+                    {% if session['shirt'] == "Yellow Shirt": %}
+                        <p>"{{ session['name'] }}!"</p>
+                        <p>You hear your name being called through the ringing of your ears</p>
+                        <p>"Captain {{ session['name'] }}! Are you alright?" Your first officer yells. She pushes the intercom and yells into "I need a medic on the bridge ASAP!"</p>
+                        <p>You stand up. "No, no. I'm alright! It just stunned me for a minute."</p>
+                        <p>Just as you get on your feet another blast rocks the Enterprise. This time, much bigger. The lights go out.</p>
+                        <p>"Shields down!" Your tactical officer yells. "What was that??"</p>
+                        <a href="/nextpage"><button>Next</button></a>
+                    {% elif session['shirt'] == "Red Shirt" %}
+                        <p>You and your partner run down the hallways towards your battle stations. It is impossible not to stumble every time the ship is hit, but you must make it to your destination.</p>
+                        <p>As you are running a hole is blown into the hull of the ship right where you just were.</p>
+                        <p>A huge piece of bulkhead goes flying past you before the automatic barriers can come up. That was a close call.</p>
+                        <p>"Are you alright?" Your teammate asks.</p>
+                        <p>Before you can answer, the alarm blares "INTRUDER ALERT!"</p>
+                        <a href="/nextpage"><button>Next</button></a>
+                    {% else: %}
+                        <p>"All hands to battle stations!" The alert blares.</p>
+                        <p>You run to secure the various organisms that are being studied.</p>
+                        <p>As you climb the ladder to some of the higher storage containers the ship gets hit again. You fall off.</p>
+                        <p>Your partner picks you up and helps you finish the task.</p>
+                    {% endif %}
+                {% endif %}
+            {% endif %}
+            {% if session['page_number'] == 4: %}
+                {% if session['explore'] == "Away Mission": %}
+                    {% if session['friendly'] == 0: %}
+                        <h2>The {{ session['encounter'] }} is friendly!</h2>
+                        {% if session['shirt'] == "Yellow Shirt": %}
+                            <p>The {{ session['encounter'] }} greets you back. After exchanging pleasantries you tell her of your mission. She knows exactly what plant you are talking about.</p>
+                            <p>You call to the ship to bring all extra hands down to gather what you can without risking harm to the environment.</p>
+                            <h2>The mission is a success! Well done!</h2>
+                        {% else: %}
+                            <p>The {{ session['encounter'] }} greets the captain back. After exchanging pleasantries he tells her of the mission. She knows exactly what plant you are talking about.</p>
+                            <p>The capatain calls to the ship to bring all extra hands down to gather what you can without risking harm to the environment.</p>
+                            <h2>The mission is a success! Well done!</h2>
+                        {% endif %}
+                    {% else: %}
+                        <h2>The {{ session['encounter'] }} is not friendly!</h2>
+                        {% if session['shirt'] == "Red Shirt": %}
+                            <p>The {{ session['encounter'] }} lunges at the captain. You pull out your phaser set to stun and fire.</p>
+                            {% if 'will_red_shirt_die' == "Yes" %}
+                                <p>The phaser didn't stun! The {{ session['encounter'] }} at you and stabs you with it's weapon. You have died. The good news is while it was distracted, the rest of your team made it safely back to the Enterprise.</p>
+                            {% else: %}
+                                <p>The stun worked! The captain yells into his communicator to beam the away team up. That was a close call!</p>
+                            {% endif %}
+                        {% else: %}
+                            <p>The {{ session['encounter'] }} lunges at one of the security officers. He pulls out his phaser set to stun and fires.</p>
+                            <p>While the {{ session['encounter'] }} is stunned you all get transported safely back to the ship.</p>
+                            <h2>Whew! That was a close call!</h2>
+                        {% endif %}
+                    {% endif %}
+                {% else: %}
+                    {% if session['shirt'] == "Yellow Shirt": %}
+                        <h2>Act quickly</h2>
+                        <p>Another alarm goes off. "Intruder alert!"</p>
+                        <p>You and the tactical officer make eye contact knowingly. The Klingons have boarded the Enterprise. If there is any hope to get out of this situation, you must act fast.</p>
+                        <p>"Give them everything we've got!" You yell to your tactical officer.</p>
+                        <p>After a short battle that seemed to last for ages, you utilize scanner disruptions coming from {{ session['location'] }} to hide from the Klingons.</p>
+                        <p>Once it is safe you direct the crew to leave the area. {{ session['location'] }} will have to be explored another day.</p>
+                    {% elif session['shirt'] == "Red Shirt": %}
+                        <h2>Intruder Alert</h2>
+                        <p>Immediately you hear heavy footsteps coming down the hall towards you. Two Klingons.</p>
+                        {% if session['will_red_shirt_die'] == "Yes" %}
+                            <p>One Klingon lunges towards you and the other towards your partner. You try to dodge but he grabs you. He is too strong for you to fight against and he stabs you with his D'k tahg.</p>
+                            <h2>You have died. Thankfully, the Enterprise still managed to escape and the crew held a lovely funeral for you.</h2>
+                        {% else: %}
+                            <p>One Klingon lunges towards you and the other towards your partner. Before he can get to you you pull out your phaser and fire. He dies. You quickly turn around and fire on the Klingon attacking your partner.</p>
+                            <p>"Thank you!" Your partner says out of breath. You both continue to check the halls until all the Klingons that have boarded are taken care of.</p>
+                            <h2>You have successfully fended off the Klingons and continued on your mission to Explore Space.</h2>
+                        {% endif %}
+                    {% endif %}
+                {% endif %}
+            {% endif %}
+        {% endif %}
+    </div>
+    <a href="/credits" id="credits">Credits</a>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

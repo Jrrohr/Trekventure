@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Audiowide&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='img/icon.png') }}">
+    <title>Trekventure</title>
+</head>
+<body>
+    <div class="navbar">
+        <div class="navbuttons">
+        {% if 'uid' not in session: %}
+            <button onclick="openregister()">Register</button>
+            <button onclick="openlogin()">Login</button>
+        {% else: %}
+        <a href="/logout"><button>Logout</button></a>
+        {% endif %}
+        </div>
+        <h1 class="title">TREKVENTURE</h1>
+        <div class="navbuttons right">
+            {% if 'uid' in session: %}
+                <a href="/save"><button>Save</button></a>
+            {% endif %}
+            <a href="/restart"><button>Restart</button></a>
+        </div>
+    </div>
+    <div class="main">
+        <div id="registerForm">
+            <h1>Register</h1>
+            <form action="/register" method="post" class="flex flexColumn marginTop">
+                <label for="username">Username: </label>
+                <input type="text" name="username">
+                <label for="email">Email: </label>
+                <input type="text" name="email">
+                <label for="password">Password: </label>
+                <input type="password" name="password">
+                <label for="confirm_password">Confirm Password: </label>
+                <input type="password" name="confirm_password">
+                <input type="submit">
+            </form>
+        </div>
+        <div id="loginForm">
+            <h1>Login</h1>
+            <form action="/login" method="post" class="flex flexColumn marginTop">
+                <label for="username">Username: </label>
+                <input type="text" name="username">
+                <label for="password">Password: </label>
+                <input type="password" name="password">
+                <input type="submit">
+            </form>
+        </div>
+        <h2>{{ user.username }}'s Games</h2>
+        <div class="flex gamelist">
+            {% for game in games %}
+                {% if game.shirt == "Yellow Shirt": %}
+                    <a href="/open/{{ game.id }}"><div class="game flex" style="background-color: yellow;"><h3>{{ game.name }}</h3></div></a>
+                {% elif game.shirt == "Blue Shirt": %}
+                    <a href="/open/{{ game.id }}"><div class="game flex" style="background-color: rgb(29, 123, 218);"><h3>{{ game.name }}</h3></div></a>
+                {% elif game.shirt == "": %}
+                    <a href="/open/{{ game.id }}"><div class="game flex" style="border: black 2px solid;"><h3>{{ game.name }}</h3></div></a>
+                {% else: %}
+                    <a href="/open/{{ game.id }}"><div class="game flex" style="background-color: rgb(186, 1, 1);"><h3>{{ game.name }}</h3></div></a>
+                {% endif %}
+        {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
